@@ -342,7 +342,7 @@ def start_calculation(params):
                     hit_detail_html = f"""
                         <div class='hit-item'>
                             <h3 style="color: #6497b1;">
-                            <span style="font-weight: normal;">Fantastical Eclipse of Moon in Lagmaran, Capiz to the Sun in Somme, France:</span><br>{formatted_moon_obs_time_utc_dt}
+                            <span style="font-weight: normal;">Fantastical Eclipse of Moon in Belgium to the Sun in Capiz:</span><br>{formatted_moon_obs_time_utc_dt}
                             </h3>
                             <p><strong>Type:</strong> {hit_result_data['type']}, <strong>Overlap:</strong> {hit_result_data['overlap_metric']:.1f}%</p>
                             <p><strong>Min Alt/Az Separation:</strong> {alt_az_sep_dms} ({hit_result_data['min_altaz_separation_deg']:.4f}°)</p>
