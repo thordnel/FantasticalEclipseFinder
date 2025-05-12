@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fantastical Eclipse Calculator</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    
+</head>
+<body>
+    <h1>Fantastical Co-Directional Eclipse Calculator</h1>
+
+    <h2>Observer in Lagmaran, Capiz (Sun):</h2>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="lat1">Latitude:</label>
+            <input type="number" id="lat1" value="11.31">
+        </div>
+        <div class="input-group">
+            <label for="lon1">Longitude:</label>
+            <input type="number" id="lon1" value="122.67">
+        </div>
+        <div class="input-group">
+            <label for="alt1">Altitude (m):</label>
+            <input type="number" id="alt1" value="40">
+        </div>
+    </div>
+    <label>Full UTC: <input type="text" id="time1" value="1922-08-24T23:00:00Z"></label><br>
+
+    <h2>Observer in Passendel to Gent Area (Moon):</h2>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="lat2">Latitude:</label>
+            <input type="number" id="lat2" value="50.889">
+        </div>
+        <div class="input-group">
+            <label for="lon2">Longitude:</label>
+            <input type="number" id="lon2" value="3.06">
+        </div>
+        <div class="input-group">
+            <label for="alt2">Altitude (m):</label>
+            <input type="number" id="alt2" value="47">
+        </div>
+    </div>
+    <label>Day of Month: <input type="number" id="day2" value="24" min="1" max="31"></label><br>
+    <label>Time (HH:MM:SS UTC): <input type="text" id="hms2" value="22:00:00"></label><br>
+
+    <h2>Search Parameters for the Observer in Belgium:</h2>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="start_year2">Start Year:</label>
+            <input type="number" id="start_year2" value="1914">
+        </div>
+        <div class="input-group">
+            <label for="end_year2">End Year:</label>
+            <input type="number" id="end_year2" value="1918">
+        </div>
+    </div>
+    <label>Months (e.g., 8 9): <input type="text" id="months2" value="8 9 10 11"></label><br>
+
+    <h2>Optimizer Setting:</h2>
+    <label>Search Hours Offset (+/-): <input type="number" id="search_hours_offset" value="1.5" step="0.1"></label><br>
+
+    <button onclick="runCalculation()">Calculate</button>
+
+    <h2>Results</h2>
+    <div id="hits-details"></div>
+    <div id="progress"></div>
+    <pre id="output-summary"></pre>
+    
+
+    <script type="text/javascript" src="script.js"></script>
+</body>
+</html>
