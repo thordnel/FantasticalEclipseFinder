@@ -278,7 +278,7 @@ def start_calculation(params):
         
         eel.updateProgress(f"Observer in Capiz (Sun): Lat={lat1}, Lon={lon1}, Alt={alt1_m}m, Initial Time1 (UTC)={datetime_str1_utc}")
         eel.updateProgress(f"Observer in Ypern/Gent (Moon): Lat={lat2}, Lon={lon2}, Alt={alt2_m}m, Day2={day2}, Time of Day2 (UTC)={hms2_str}")
-        eel.updateProgress(f"Searching for Belgium observer dates: Years {start_year2_val}-{end_year2_val}, Months: {months2_list}")
+        eel.updateProgress(f"Searching for France/Belgium observer dates: Years {start_year2_val}-{end_year2_val}, Months: {months2_list}")
         eel.updateProgress(f"Optimizer search window for time offset: +/- {search_hours_offset_val} hours for each date.")
         eel.updateProgress("-" * 30)
 
@@ -342,7 +342,8 @@ def start_calculation(params):
                     hit_detail_html = f"""
                         <div class='hit-item'>
                             <h3 style="color: #6497b1;">
-                            <span style="font-weight: normal;">Fantastical Eclipse of Moon in Belgium to the Sun in Capiz:</span><br>{formatted_moon_obs_time_utc_dt}
+                            <span style="font-weight: normal;">Fantastical Eclipse of Moon in France
+ to the Sun in Philippines Islands:</span><br>{formatted_moon_obs_time_utc_dt}
                             </h3>
                             <p><strong>Type:</strong> {hit_result_data['type']}, <strong>Overlap:</strong> {hit_result_data['overlap_metric']:.1f}%</p>
                             <p><strong>Min Alt/Az Separation:</strong> {alt_az_sep_dms} ({hit_result_data['min_altaz_separation_deg']:.4f}°)</p>
@@ -372,7 +373,7 @@ def start_calculation(params):
             summary_text += f"Total hits found: {len(found_hits_summary_list)}\n"
             # Individual hits already displayed via addHitDetail
         else:
-            summary_text += "No co-directional 'hits' found in the specified date range for Observer in Belgium.\n"
+            summary_text += "No co-directional 'hits' found in the specified date range for Observer in France.\n"
         summary_text += "="*40
         eel.showSummary(summary_text)
 
