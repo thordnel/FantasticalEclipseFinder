@@ -1,48 +1,65 @@
-eel.expose(updateProgress); // Expose JS function to Python
-function updateProgress(message) {
-    const progressDiv = document.getElementById('progress');
-    progressDiv.innerHTML += message + "<br>"; // Append message
-    if (message.startsWith("Progress") || message.startsWith("[")) { // A bit hacky, improve as needed
-        progressDiv.scrollTop = progressDiv.scrollHeight; // Auto-scroll
-    }
-}
+// web/script.js
 
-eel.expose(showSummary);
-function showSummary(summaryText) {
-    document.getElementById('output-summary').textContent = summaryText;
-    document.getElementById('progress').innerHTML += "--- Calculation Complete --- <br>";
-}
-
+// Expose functions to Python
+eel.expose(updateProgress);
+eel.expose(updateProgressBar); // NEW
 eel.expose(addHitDetail);
-function addHitDetail(hitHtml) {
-    document.getElementById('hits-details').innerHTML += hitHtml;
+eel.expose(showSummary);
+
+const logArea = document.getElementById('log-area');
+const resultsArea = document.getElementById('results-area');
+const progressBar = document.getElementById('progress-bar');
+const btn = document.getElementById('calc-btn');
+
+function updateProgress(message) {
+    logArea.innerText = `> ${message}`;
+    logArea.scrollTop = logArea.scrollHeight;
 }
 
+// NEW: Python calls this with percentage (0-100)
+function updateProgressBar(percent) {
+    progressBar.style.width = percent + '%';
+}
 
-async function runCalculation() {
-    document.getElementById('progress').innerHTML = "Starting calculation...<br>";
-    document.getElementById('output-summary').textContent = "";
-    document.getElementById('hits-details').innerHTML = "";
+function addHitDetail(htmlContent) {
+    const div = document.createElement('div');
+    div.innerHTML = htmlContent;
+    resultsArea.prepend(div);
+}
 
-    let params = {
+function showSummary(message) {
+    updateProgress(message);
+    btn.disabled = false;
+    btn.innerText = "Run Calculation";
+}
+
+async function runPythonCalc() {
+    // Reset UI
+    btn.disabled = true;
+    btn.innerText = "Scanning...";
+    resultsArea.innerHTML = '';
+    progressBar.style.width = '0%'; // Reset bar
+
+    // Gather Inputs
+    const params = {
+        ref_date_str: document.getElementById('ref_date').value,
         lat1: parseFloat(document.getElementById('lat1').value),
         lon1: parseFloat(document.getElementById('lon1').value),
-        alt1: parseFloat(document.getElementById('alt1').value),
-        time1: document.getElementById('time1').value,
         lat2: parseFloat(document.getElementById('lat2').value),
         lon2: parseFloat(document.getElementById('lon2').value),
-        alt2: parseFloat(document.getElementById('alt2').value),
-        day2: parseInt(document.getElementById('day2').value),
-        hms2: document.getElementById('hms2').value,
-        start_year2: parseInt(document.getElementById('start_year2').value),
-        end_year2: parseInt(document.getElementById('end_year2').value),
-        months2_str: document.getElementById('months2').value, // Send as string
-        search_hours_offset: parseFloat(document.getElementById('search_hours_offset').value)
+        time1: document.getElementById('time1').value,
+        search_hours_offset: parseInt(document.getElementById('search_hours_offset').value),
+        search_radius: parseFloat(document.getElementById('search_radius').value),
+        
+        // NEW: Send Dynamic Years
+        start_year: parseInt(document.getElementById('start_year').value),
+        end_year: parseInt(document.getElementById('end_year').value)
     };
 
-    // Call Python function
-    // The Python function will call updateProgress and showSummary
-    await eel.start_calculation(params)(); 
-    // Note the extra () after the await eel.start_calculation(params)
-    // This is because eel.start_calculation(params) itself returns a function that needs to be called.
+    try {
+        await eel.start_calculation(params)();
+    } catch (e) {
+        updateProgress("Error: " + e);
+        btn.disabled = false;
+    }
 }

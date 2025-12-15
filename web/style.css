@@ -70,3 +70,35 @@ pre {
     border-radius: 5px;
     overflow-x: auto;
 }
+
+/* Add inside <style> ... */
+
+/* Highlight class for the specific table row */
+.match-row {
+    background-color: rgba(255, 215, 0, 0.15); /* Faint Gold Background */
+    border-left: 4px solid #ffd700;            /* Solid Gold Left Border */
+}
+
+/* Text color for the match row to ensure readability */
+.match-row td {
+    color: #ffd700; 
+    font-weight: 600;
+}
+
+/* Special Log Entry for Match */
+.log-entry.match {
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+/* Badge for the Note */
+.eclipse-badge {
+    background-color: #ffd700;
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
