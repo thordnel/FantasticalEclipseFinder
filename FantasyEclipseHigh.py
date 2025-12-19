@@ -28,10 +28,22 @@ def format_dms(degrees_float):
     return f"{d:02d}°{m:02d}'{s:05.2f}\""
 
 def format_latlon(lat, lon):
-    """Formats a coordinate pair into a nice N/S E/W string."""
+    """
+    Formats coordinates as Decimal Degrees and wraps them in a 
+    clickable Google Maps link.
+    """
+    # 1. Prepare the display text (Decimal Degrees)
     ns = 'N' if lat >= 0 else 'S'
     ew = 'E' if lon >= 0 else 'W'
-    return f"{format_dms(lat)}{ns}, {format_dms(lon)}{ew}"
+    text_label = f"{abs(lat):.4f}° {ns}, {abs(lon):.4f}° {ew}"
+    
+    # 2. Prepare the URL (using raw float numbers)
+    # Google Maps expects: https://www.google.com/maps?q=11.4517,120.9311
+    url = f"https://www.google.com/maps?q={lat},{lon}"
+    
+    # 3. Return HTML string
+    # target="_blank" forces it to open in a new browser tab
+    return f'<a href="{url}" target="_blank" style="color: #4fc3f7; text-decoration: underline;">{text_label}</a>'
 
 def get_angular_diameter_arcsec(radius_km, distance_au):
     if not radius_km or distance_au <= 0: return 0
