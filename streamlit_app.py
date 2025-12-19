@@ -5,10 +5,10 @@ from skyfield.api import load, wgs84
 from skyfield.constants import AU_KM
 from scipy.optimize import minimize, minimize_scalar
 
-# --- PAGE CONFIG ---
+# --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Eclipse Finder", page_icon="🌗", layout="wide")
 
-# --- CUSTOM CSS FOR "CARDS" ---
+# --- 2. CUSTOM CSS (Dark Mode Cards) ---
 st.markdown("""
 <style>
     .hit-card {
@@ -21,6 +21,8 @@ st.markdown("""
     }
     .hit-card h3 { margin-top: 0; color: #fff; }
     .hit-card p { margin: 5px 0; color: #e0e0e0; }
+    
+    /* Drift Box Styling */
     .drift-box {
         background-color: #0e1117;
         padding: 10px;
@@ -29,11 +31,14 @@ st.markdown("""
         font-size: 0.9em;
         border: 1px solid #444;
     }
+    
+    /* Link Styling */
     a { color: #4fc3f7 !important; text-decoration: underline; }
+    a:hover { color: #81d4fa !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- CACHED LOADING (SPEED BOOST) ---
+# --- 3. LOAD DATA (Cached for Speed) ---
 @st.cache_resource
 def load_skyfield_data():
     # Only loads the heavy file once
@@ -46,14 +51,15 @@ sun = eph['sun']
 moon = eph['moon']
 earth = eph['earth']
 
-# --- HELPERS ---
+# --- 4. HELPER FUNCTIONS ---
 
 def format_latlon_link(lat, lon):
     """Returns a clickable Google Maps HTML link."""
     ns = 'N' if lat >= 0 else 'S'
     ew = 'E' if lon >= 0 else 'W'
     text_label = f"{abs(lat):.4f}° {ns}, {abs(lon):.4f}° {ew}"
-    url = f"https://www.google.com/maps/place/11%C2%B027'06.21%22N+120%C2%B055'51.83%22E?q={lat},{lon}"
+    # Standard Google Maps Query URL
+    url = f"https://www.google.com/maps?q={lat},{lon}"
     return f'<a href="{url}" target="_blank">{text_label}</a>'
 
 def get_altaz(time_obj, loc, body):
@@ -68,7 +74,7 @@ def get_angular_diameter_arcsec(radius_km, distance_au):
     if not radius_km or distance_au <= 0: return 0
     return np.degrees(2 * radius_km / (distance_au * AU_KM)) * 3600
 
-# --- CORE MATH LOGIC ---
+# --- 5. CORE OPTIMIZATION LOGIC ---
 
 def check_alignment_at_offset(offset, lat1, lon1, t1_base, body1_obj, lat2, lon2, t2_base, body2_obj):
     # Calculate exact times
@@ -163,23 +169,31 @@ def optimize_spatial(base_res, lat1, lon1, lat2, lon2, t1_base, b1_obj, t2_base,
     })
     return base_res
 
-# --- STREAMLIT UI ---
+# --- 6. USER INTERFACE ---
 
 st.title("🌗 Eclipse & Alignment Finder")
 
-# 1. Inputs
+# Input Form
 with st.container():
     st.subheader("Configuration")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**🌞 Location 1 (Sun)**")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**🌞 Loc1 (Sun)**")
+        # Defaults: Manila
         lat1 = st.number_input("Lat1", value=14.5995, format="%.4f")
         lon1 = st.number_input("Lon1", value=120.9842, format="%.4f")
-    with c2:
-        st.markdown("**ME/ASC Location 2 (Moon)**")
+        st.caption("Timezone: UTC + 8")
+        
+    with col2:
+        st.markdown("**ME/ASC Loc2 (Moon)**")
+        # Defaults: London
         lat2 = st.number_input("Lat2", value=51.5074, format="%.4f")
         lon2 = st.number_input("Lon2", value=-0.1278, format="%.4f")
+        st.caption("Timezone: UTC + 1")
 
+    st.markdown("---")
+    
     c3, c4, c5 = st.columns(3)
     with c3:
         ref_date = st.date_input("Reference Date", value=datetime.date(1922, 8, 24))
@@ -190,19 +204,21 @@ with st.container():
     with c5:
         radius_km = st.number_input("Search Radius (km)", value=150.0)
 
-# 2. Run Button
+# --- 7. EXECUTION LOGIC ---
+
 if st.button("Start Calculation", type="primary"):
     
-    # Progress Bar
+    # UI Elements for progress
     progress_bar = st.progress(0)
     status_text = st.empty()
     results_container = st.container()
 
-    # Setup Logic
-    dt1_base = datetime.datetime.combine(ref_date, ref_time).replace(tzinfo=datetime.timezone.utc)
-    
+    # Define Offsets (UTC+8 and UTC+1)
     offset_loc1 = datetime.timedelta(hours=8)
     offset_loc2 = datetime.timedelta(hours=1)
+    
+    # Prepare Search Params
+    dt1_base = datetime.datetime.combine(ref_date, ref_time).replace(tzinfo=datetime.timezone.utc)
     
     total_steps = (end_year - start_year + 1) * 12
     current_step = 0
@@ -210,6 +226,7 @@ if st.button("Start Calculation", type="primary"):
 
     status_text.write("Initializing search...")
 
+    # Main Search Loop
     for y in range(start_year, end_year + 1):
         for m in range(1, 13):
             current_step += 1
@@ -220,31 +237,37 @@ if st.button("Start Calculation", type="primary"):
                 dt2_base = datetime.datetime(y, m, ref_date.day, ref_time.hour, ref_time.minute, tzinfo=datetime.timezone.utc)
             except ValueError: continue
 
-            # Optimization Steps
+            # 1. Optimize Time
             res = optimize_time_offset(lat1, lon1, dt1_base, sun, lat2, lon2, dt2_base, moon, 12)
             
+            # Check if bodies are visible (Altitude > -1 degree)
             if res['alt1'] > -1 and res['alt2'] > -1:
                 final_res = res
+                
+                # 2. Optimize Space (if close enough)
                 if res['sep'] < 5.0:
                     final_res = optimize_spatial(res, lat1, lon1, lat2, lon2, dt1_base, sun, dt2_base, moon, radius_km)
 
-                # Tolerance Check
+                # 3. Check Tolerance (Overlap > 0.1%)
                 if final_res['overlap'] > 0.1:
                     matches += 1
                     
-                    # Formatting
+                    # --- Formatting ---
                     t1_utc = final_res['t1']
                     t2_utc = final_res['t2']
                     
+                    # Apply Offsets
                     loc1_local = t1_utc + offset_loc1
                     loc2_local = t2_utc + offset_loc2
                     
+                    # Format Strings
                     utc_str_1 = t1_utc.strftime("%d %b %Y %H:%M:%S UTC")
                     utc_str_2 = t2_utc.strftime("%d %b %Y %H:%M:%S UTC")
                     
                     loc1_str = loc1_local.strftime("%d %b %Y %I:%M:%S %p, %A")
                     loc2_str = loc2_local.strftime("%d %b %Y %I:%M:%S %p, %A")
                     
+                    # Prepare Drift HTML
                     drift_html = ""
                     if final_res.get('drift1', 0) > 1.0 or final_res.get('drift2', 0) > 1.0:
                         drift_html = f"""
@@ -256,6 +279,7 @@ if st.button("Start Calculation", type="primary"):
                         """
                     
                     # Display Result Card
+                    # NOTE: unsafe_allow_html=True is REQUIRED for the links and CSS to work
                     results_container.markdown(f"""
                     <div class="hit-card">
                         <h3>Match Found!</h3>
